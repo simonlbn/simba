@@ -466,7 +466,7 @@ Default Standard Library configuration.
 Homepage
 --------
 
-https://www.wemos.cc/product/d1-mini.html
+https://wiki.wemos.cc/products:d1:d1_mini
 
 Mcu
 ---
