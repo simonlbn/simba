@@ -71,7 +71,11 @@ Below is the memory usage of two applications:
 +==========================+===========+===========+
 | minimal-configuration    |     91356 |      8636 |
 +--------------------------+-----------+-----------+
+<<<<<<< HEAD
 | default-configuration    |    355004 |     83384 |
+=======
+| default-configuration    |    354389 |     83344 |
+>>>>>>> 99114ca... Fix link to WEMOS D1 mini product page.
 +--------------------------+-----------+-----------+
 
 Default configuration
