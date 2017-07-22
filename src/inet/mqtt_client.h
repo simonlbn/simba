@@ -76,6 +76,14 @@ typedef int (*mqtt_on_error_t)(struct mqtt_client_t *client_p,
                                int error);
 
 /**
+ * An MQTT style length string.
+ */
+struct mqtt_string_t {
+    const void *buf_p;
+    size_t size;
+};
+
+/**
  * MQTT client.
  */
 struct mqtt_client_t {
@@ -102,15 +110,23 @@ struct mqtt_client_t {
  * MQTT application message.
  */
 struct mqtt_application_message_t {
-    struct {
-        const char *buf_p;
-        size_t size;
-    } topic;
-    struct {
-        const void *buf_p;
-        size_t size;
-    } payload;
+    struct mqtt_string_t topic;
+    struct mqtt_string_t payload;
     enum mqtt_qos_t qos;
+};
+
+/**
+ * MQTT Connection options.
+ */
+struct mqtt_conn_options_t {
+    /*! Should be 1-23 [0-9a-zA-Z] characters [MQTT-3.1.3-5]. */
+    struct mqtt_string_t client_id;
+    struct mqtt_application_message_t will;
+    struct mqtt_string_t user_name;
+    struct mqtt_string_t password;
+
+    /*! Keep alive interval in seconds. */
+    int keep_alive_s;
 };
 
 /**
@@ -149,10 +165,19 @@ void *mqtt_client_main(void *arg_p);
  * Establish a connection to the server.
  *
  * @param[in] self_p MQTT client.
+ * @param[in] options_p MQTT connection options. May be NULL. Pointer
+ *                      only need to be valid for the duration of the
+ *                      function call.
+ *
+ * @warning If options_p is set, all members of the struct not
+ *          explicitly used, must be set to zero.  It is suggested to
+ *          do this by calling memset(options_p, 0,
+ *          sizeof(*options_p)); before setting needed variables.
  *
  * @return zero(0) or negative error code.
  */
-int mqtt_client_connect(struct mqtt_client_t *self_p);
+int mqtt_client_connect(struct mqtt_client_t *self_p,
+                        struct mqtt_conn_options_t *options_p);
 
 /**
  * Disconnect from the server.

@@ -36,6 +36,7 @@ struct message_t {
 };
 
 static struct mqtt_client_t client;
+static struct mqtt_conn_options_t conn_options;
 static struct queue_t qout;
 static struct queue_t qin;
 static struct queue_t qserverout;
@@ -146,9 +147,14 @@ static int test_connect(void)
     struct message_t message;
     uint8_t buf[16];
 
+    /* Setup */
+    memset(&conn_options, 0, sizeof(conn_options));
+    conn_options.client_id.buf_p = FSTR("cid");
+    conn_options.client_id.size = 3;
+
     /* Prepare the server to receive the connection message. */
     message.buf_p = NULL;
-    message.size = 14;
+    message.size = 2 + 12 + 5;
     BTASSERT(queue_write(&qserverin, &message, sizeof(message)) == sizeof(message));
 
     /* Prepare the server to send the connection ack message. */
@@ -161,11 +167,11 @@ static int test_connect(void)
     BTASSERT(queue_write(&qserverin, &message, sizeof(message)) == sizeof(message));
 
     /* Connect. */
-    BTASSERTI(mqtt_client_connect(&client), ==, 0);
+    BTASSERTI(mqtt_client_connect(&client, &conn_options), ==, 0);
 
     BTASSERTI(queue_read(&qserverout, buf, 2), ==, 2);
     BTASSERTI(buf[0], ==, 0x10);
-    BTASSERTI(buf[1], ==, 12);
+    BTASSERTI(buf[1], ==, 12 + 5);
 
     BTASSERTI(queue_read(&qserverout, buf, 12), ==, 12);
     BTASSERTI(buf[0], ==, 0);
@@ -179,7 +185,14 @@ static int test_connect(void)
     BTASSERTI(buf[8], ==, 1);
     BTASSERTI(buf[9], ==, 0x2c);
     BTASSERTI(buf[10], ==, 0);
-    BTASSERTI(buf[11], ==, 0);
+    BTASSERTI(buf[11], ==, 5); /* 2 bytes str header + 3 bytes client id */
+
+    BTASSERTI(queue_read(&qserverout, buf, 5), ==, 5);
+    BTASSERTI(buf[0], ==, 0);
+    BTASSERTI(buf[1], ==, 3);
+    BTASSERTI(buf[2], ==, 'c');
+    BTASSERTI(buf[3], ==, 'i');
+    BTASSERTI(buf[4], ==, 'd');
 
     return (0);
 }
