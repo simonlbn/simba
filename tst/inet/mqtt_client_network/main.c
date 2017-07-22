@@ -103,7 +103,7 @@ static int test_init(struct harness_t *harness_p)
 
 static int test_connect(struct harness_t *harness_p)
 {
-    BTASSERT(mqtt_client_connect(&client) == 0);
+    BTASSERT(mqtt_client_connect(&client, NULL) == 0);
 
     return (0);
 }
