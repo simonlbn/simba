@@ -119,8 +119,9 @@ struct mqtt_application_message_t {
  * MQTT Connection options.
  */
 struct mqtt_conn_options_t {
-    /*! Should be 1-23 [0-9a-zA-Z] characters [MQTT-3.1.3-5]. */
+    /*! Should be 1-23 [0-9a-zA-Z] characters as per [MQTT-3.1.3-5]. */
     struct mqtt_string_t client_id;
+    /*! Last Will and Testament to be sent on unclean disconnect */
     struct mqtt_application_message_t will;
     struct mqtt_string_t user_name;
     struct mqtt_string_t password;
