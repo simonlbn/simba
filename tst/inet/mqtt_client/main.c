@@ -154,7 +154,7 @@ static int test_connect(void)
 
     /* Prepare the server to receive the connection message. */
     message.buf_p = NULL;
-    message.size = 2 + 12 + 5;
+    message.size = 2 + 10 + 5;
     BTASSERT(queue_write(&qserverin, &message, sizeof(message)) == sizeof(message));
 
     /* Prepare the server to send the connection ack message. */
@@ -171,9 +171,9 @@ static int test_connect(void)
 
     BTASSERTI(queue_read(&qserverout, buf, 2), ==, 2);
     BTASSERTI(buf[0], ==, 0x10);
-    BTASSERTI(buf[1], ==, 12 + 5);
+    BTASSERTI(buf[1], ==, 10 + 5);
 
-    BTASSERTI(queue_read(&qserverout, buf, 12), ==, 12);
+    BTASSERTI(queue_read(&qserverout, buf, 10), ==, 10);
     BTASSERTI(buf[0], ==, 0);
     BTASSERTI(buf[1], ==, 4);
     BTASSERTI(buf[2], ==, 'M');
@@ -184,8 +184,6 @@ static int test_connect(void)
     BTASSERTI(buf[7], ==, 0x02);
     BTASSERTI(buf[8], ==, 1);
     BTASSERTI(buf[9], ==, 0x2c);
-    BTASSERTI(buf[10], ==, 0);
-    BTASSERTI(buf[11], ==, 5); /* 2 bytes str header + 3 bytes client id */
 
     BTASSERTI(queue_read(&qserverout, buf, 5), ==, 5);
     BTASSERTI(buf[0], ==, 0);
