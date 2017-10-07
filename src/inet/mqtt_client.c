@@ -69,6 +69,9 @@
 #define CONTROL_UNSUBSCRIBE    5
 #define CONTROL_NONE           6
 
+//! Length of a MQTT CONNECT variable header
+#define CONNECT_VAR_HDR_LEN   10
+
 static const char *message_fmt[] = {
     "forbidden",
     "connect",
@@ -221,11 +224,11 @@ static int handle_control_connect(struct mqtt_client_t *self_p)
     struct mqtt_conn_options_t *options_p;
     struct mqtt_conn_options_t default_options;
     int res = 0, payload_length = 0;
-    uint8_t buf[12], flags = 0;
+    uint8_t buf[CONNECT_VAR_HDR_LEN], flags = 0;
 
     /*
      * Note: Each payload string requires a 2 byte length header, so
-     * that must be accounted for in the payload length (hence + 2
+     * that must be accounted for in the payload length (hence +2 a
      * number of places below).
      */
 
@@ -261,7 +264,11 @@ static int handle_control_connect(struct mqtt_client_t *self_p)
         options_p->client_id.size = strlen(options_p->client_id.buf_p);
     }
 
-    /* Calculate payload length, and set flags. */
+    /*
+     * Calculate payload length first as we need to send length in
+     * CONNECT header. We also set flags as they are also in the
+     * header.
+     */
     payload_length = options_p->client_id.size + 2;
 
     if (options_p->will.topic.size > 0) {
@@ -287,10 +294,11 @@ static int handle_control_connect(struct mqtt_client_t *self_p)
         payload_length += options_p->password.size + 2;
     }
 
-    std_printf("payload = %d\r\n", payload_length);
-
     /* Write the fixed header. */
-    res = write_fixed_header(self_p, MQTT_CONNECT, 0, 12 + payload_length);
+    res = write_fixed_header(self_p,
+                             MQTT_CONNECT,
+                             0,
+                             CONNECT_VAR_HDR_LEN + payload_length);
 
     if (res != 0) {
         return (res);
@@ -307,10 +315,9 @@ static int handle_control_connect(struct mqtt_client_t *self_p)
     buf[7] = flags;                      /* Connect Flags */
     buf[8] = MSB(KEEP_ALIVE);            /* Keep Alive MSB */
     buf[9] = LSB(KEEP_ALIVE);            /* Keep Alive LSB */
-    buf[10] = MSB(payload_length);       /* Payload - Length MSB */
-    buf[11] = LSB(payload_length);       /* Payload - Length LSB */
 
-    if (chan_write(self_p->transport.out_p, &buf[0], 12) != 12) {
+    if (chan_write(self_p->transport.out_p, &buf[0], CONNECT_VAR_HDR_LEN)
+        != CONNECT_VAR_HDR_LEN) {
         return (-EIO);
     }
 
