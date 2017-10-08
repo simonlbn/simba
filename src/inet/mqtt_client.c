@@ -228,8 +228,8 @@ static int handle_control_connect(struct mqtt_client_t *self_p)
 
     /*
      * Note: Each payload string requires a 2 byte length header, so
-     * that must be accounted for in the payload length (hence +2 a
-     * number of places below).
+     * that must be accounted for in the payload length (hence "+ 2" a
+     * number of length calculations below).
      */
 
     if (queue_read(&self_p->control.in,
