@@ -151,10 +151,18 @@ static int test_connect(void)
     memset(&conn_options, 0, sizeof(conn_options));
     conn_options.client_id.buf_p = FSTR("cid");
     conn_options.client_id.size = 3;
+    conn_options.will.topic.buf_p = FSTR("wtop");
+    conn_options.will.topic.size = 4;
+    conn_options.will.payload.buf_p = FSTR("wpay");
+    conn_options.will.payload.size = 4;
+    conn_options.user_name.buf_p = FSTR("john");
+    conn_options.user_name.size = 4;
+    conn_options.password.buf_p = FSTR("secret");
+    conn_options.password.size = 6;
 
     /* Prepare the server to receive the connection message. */
     message.buf_p = NULL;
-    message.size = 2 + 10 + 5;
+    message.size = 2 + 10 + 5 + 6 + 6 + 6 + 8;
     BTASSERT(queue_write(&qserverin, &message, sizeof(message)) == sizeof(message));
 
     /* Prepare the server to send the connection ack message. */
@@ -171,7 +179,7 @@ static int test_connect(void)
 
     BTASSERTI(queue_read(&qserverout, buf, 2), ==, 2);
     BTASSERTI(buf[0], ==, 0x10);
-    BTASSERTI(buf[1], ==, 10 + 5);
+    BTASSERTI(buf[1], ==, 10 + 5 + 6 + 6 + 6 + 8);
 
     BTASSERTI(queue_read(&qserverout, buf, 10), ==, 10);
     BTASSERTI(buf[0], ==, 0);
@@ -181,7 +189,7 @@ static int test_connect(void)
     BTASSERTI(buf[4], ==, 'T');
     BTASSERTI(buf[5], ==, 'T');
     BTASSERTI(buf[6], ==, 4);
-    BTASSERTI(buf[7], ==, 0x02);
+    BTASSERTI(buf[7], ==, 0xc6);
     BTASSERTI(buf[8], ==, 1);
     BTASSERTI(buf[9], ==, 0x2c);
 
@@ -191,6 +199,40 @@ static int test_connect(void)
     BTASSERTI(buf[2], ==, 'c');
     BTASSERTI(buf[3], ==, 'i');
     BTASSERTI(buf[4], ==, 'd');
+
+    BTASSERTI(queue_read(&qserverout, buf, 6), ==, 6);
+    BTASSERTI(buf[0], ==, 0);
+    BTASSERTI(buf[1], ==, 4);
+    BTASSERTI(buf[2], ==, 'w');
+    BTASSERTI(buf[3], ==, 't');
+    BTASSERTI(buf[4], ==, 'o');
+    BTASSERTI(buf[5], ==, 'p');
+
+    BTASSERTI(queue_read(&qserverout, buf, 6), ==, 6);
+    BTASSERTI(buf[0], ==, 0);
+    BTASSERTI(buf[1], ==, 4);
+    BTASSERTI(buf[2], ==, 'w');
+    BTASSERTI(buf[3], ==, 'p');
+    BTASSERTI(buf[4], ==, 'a');
+    BTASSERTI(buf[5], ==, 'y');
+
+    BTASSERTI(queue_read(&qserverout, buf, 6), ==, 6);
+    BTASSERTI(buf[0], ==, 0);
+    BTASSERTI(buf[1], ==, 4);
+    BTASSERTI(buf[2], ==, 'j');
+    BTASSERTI(buf[3], ==, 'o');
+    BTASSERTI(buf[4], ==, 'h');
+    BTASSERTI(buf[5], ==, 'n');
+
+    BTASSERTI(queue_read(&qserverout, buf, 8), ==, 8);
+    BTASSERTI(buf[0], ==, 0);
+    BTASSERTI(buf[1], ==, 6);
+    BTASSERTI(buf[2], ==, 's');
+    BTASSERTI(buf[3], ==, 'e');
+    BTASSERTI(buf[4], ==, 'c');
+    BTASSERTI(buf[5], ==, 'r');
+    BTASSERTI(buf[6], ==, 'e');
+    BTASSERTI(buf[7], ==, 't');
 
     return (0);
 }
