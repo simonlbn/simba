@@ -149,6 +149,7 @@ static int test_connect(void)
 
     /* Setup */
     memset(&conn_options, 0, sizeof(conn_options));
+    conn_options.keep_alive_s = 4242;
     conn_options.client_id.buf_p = FSTR("cid");
     conn_options.client_id.size = 3;
     conn_options.will.topic.buf_p = FSTR("wtop");
@@ -190,8 +191,8 @@ static int test_connect(void)
     BTASSERTI(buf[5], ==, 'T');
     BTASSERTI(buf[6], ==, 4);
     BTASSERTI(buf[7], ==, 0xc6);
-    BTASSERTI(buf[8], ==, 1);
-    BTASSERTI(buf[9], ==, 0x2c);
+    BTASSERTI(buf[8], ==, 0x10);
+    BTASSERTI(buf[9], ==, 0x92);
 
     BTASSERTI(queue_read(&qserverout, buf, 5), ==, 5);
     BTASSERTI(buf[0], ==, 0);

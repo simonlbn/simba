@@ -91,13 +91,10 @@ static const char *message_fmt[] = {
     "forbidden"
 };
 
-//! Interval required between MQTT packets.
-#define KEEP_ALIVE 300
-
-/*! Extract Most Significant Byte from a 16bit value. */
+/** Extract Most Significant Byte from a 16bit value. */
 #define MSB(b) ((b >> 8) & 0xff)
 
-/*! Extract Least Significant Byte from a 16bit value. */
+/** Extract Least Significant Byte from a 16bit value. */
 #define LSB(b) (b & 0xff)
 
 /**
@@ -300,6 +297,10 @@ static int handle_control_connect(struct mqtt_client_t *self_p)
         payload_length += options_p->password.size + 2;
     }
 
+    if (options_p->keep_alive_s == 0) {
+        options_p->keep_alive_s = DEFAULT_KEEP_ALIVE_S;
+    }
+
     /* Write the fixed header. */
     res = write_fixed_header(self_p,
                              MQTT_CONNECT,
@@ -311,16 +312,16 @@ static int handle_control_connect(struct mqtt_client_t *self_p)
     }
 
     /* Write the variable header. */
-    buf[0] = 0;                          /* Protocol Name - Length MSB */
-    buf[1] = 4;                          /* Protocol Name - Length LSB */
-    buf[2] = 'M';                        /* Protocol Name */
-    buf[3] = 'Q';                        /* Protocol Name */
-    buf[4] = 'T';                        /* Protocol Name */
-    buf[5] = 'T';                        /* Protocol Name */
-    buf[6] = 4;                          /* Protocol Level */
-    buf[7] = flags;                      /* Connect Flags */
-    buf[8] = MSB(KEEP_ALIVE);            /* Keep Alive MSB */
-    buf[9] = LSB(KEEP_ALIVE);            /* Keep Alive LSB */
+    buf[0] = 0;                            /* Protocol Name - Length MSB */
+    buf[1] = 4;                            /* Protocol Name - Length LSB */
+    buf[2] = 'M';                          /* Protocol Name */
+    buf[3] = 'Q';                          /* Protocol Name */
+    buf[4] = 'T';                          /* Protocol Name */
+    buf[5] = 'T';                          /* Protocol Name */
+    buf[6] = 4;                            /* Protocol Level */
+    buf[7] = flags;                        /* Connect Flags */
+    buf[8] = MSB(options_p->keep_alive_s); /* Keep Alive MSB */
+    buf[9] = LSB(options_p->keep_alive_s); /* Keep Alive LSB */
 
     if (chan_write(self_p->transport.out_p, &buf[0], CONNECT_VAR_HDR_LEN)
         != CONNECT_VAR_HDR_LEN) {

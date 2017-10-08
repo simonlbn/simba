@@ -33,6 +33,9 @@
 
 #include "simba.h"
 
+/** Default MQTT keep alive interval in seconds. */
+#define DEFAULT_KEEP_ALIVE_S 300
+
 /** Client states. */
 enum mqtt_client_state_t {
     mqtt_client_state_disconnected_t,
