@@ -258,6 +258,9 @@ static int handle_control_connect(struct mqtt_client_t *self_p)
     /*
      * As per MQTT-3.1.3-3 a Client ID is required, so if the user has
      * not specified one, we set one.
+     *
+     * We should preferably set a random client id, but we don't
+     * currently have an way to get a random number on all platforms.
      */
     if (options_p->client_id.size == 0) {
         options_p->client_id.buf_p = FSTR("simba_mqtt");
@@ -321,7 +324,7 @@ static int handle_control_connect(struct mqtt_client_t *self_p)
         return (-EIO);
     }
 
-    /* Write paylaod */
+    /* Write paylaod string by string. */
     res = write_mqtt_string(self_p, &options_p->client_id);
 
     if (res != 0) {
