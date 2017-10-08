@@ -119,11 +119,13 @@ struct mqtt_application_message_t {
  * MQTT Connection options.
  */
 struct mqtt_conn_options_t {
-    /*! Should be 1-23 [0-9a-zA-Z] characters as per [MQTT-3.1.3-5]. */
+    /** Should be 1-23 [0-9a-zA-Z] characters as per [MQTT-3.1.3-5]. */
     struct mqtt_string_t client_id;
-    /*! Last Will and Testament to be sent on unclean disconnect */
+    /** Optional Last Will and Testament to be sent on unclean disconnect. */
     struct mqtt_application_message_t will;
+    /** Optional user name for server authentication. */
     struct mqtt_string_t user_name;
+    /** Optional password for server authentication. */
     struct mqtt_string_t password;
 
     /*! Keep alive interval in seconds. */

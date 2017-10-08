@@ -69,7 +69,7 @@
 #define CONTROL_UNSUBSCRIBE    5
 #define CONTROL_NONE           6
 
-//! Length of a MQTT CONNECT variable header
+//! Length of a MQTT CONNECT variable header.
 #define CONNECT_VAR_HDR_LEN   10
 
 static const char *message_fmt[] = {
@@ -228,8 +228,8 @@ static int handle_control_connect(struct mqtt_client_t *self_p)
 
     /*
      * Note: Each payload string requires a 2 byte length header, so
-     * that must be accounted for in the payload length (hence "+ 2" a
-     * number of length calculations below).
+     * that must be accounted for in the payload length hence "+ 2" a
+     * number of length calculations below.
      */
 
     if (queue_read(&self_p->control.in,
@@ -249,7 +249,10 @@ static int handle_control_connect(struct mqtt_client_t *self_p)
      */
     flags = CLEAN_SESSION;
 
-    /* Be sure that 'will' topic and payload are both either set or unset */
+    /*
+      * Be sure that 'will' topic and payload are both either set or
+      * unset.
+      */
     if ((options_p->will.topic.size == 0) !=
         (options_p->will.payload.size == 0)) {
         return (-EINVAL);
