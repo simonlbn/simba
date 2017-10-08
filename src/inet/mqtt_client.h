@@ -123,9 +123,9 @@ struct mqtt_conn_options_t {
     struct mqtt_string_t client_id;
     /** Optional Last Will and Testament to be sent on unclean disconnect. */
     struct mqtt_application_message_t will;
-    /** Optional user name for server authentication. */
+    /** Optional user name for broker authentication. */
     struct mqtt_string_t user_name;
-    /** Optional password for server authentication. */
+    /** Optional password for broker authentication. */
     struct mqtt_string_t password;
 
     /*! Keep alive interval in seconds. */
