@@ -108,6 +108,7 @@
 
 #if defined(FAMILY_ESP)
 #    define PORT_HAS_ADC
+#    define PORT_HAS_CHIPID
 #    define PORT_HAS_EEPROM_SOFT
 #    define PORT_HAS_ESP_WIFI
 #    define PORT_HAS_EXTI
