@@ -117,4 +117,24 @@ const char *esp_wifi_station_status_as_string(enum esp_wifi_station_status_t sta
     }
 }
 
+int esp_wifi_force_sleep(void)
+{
+    int res;
+
+    wifi_fpm_set_sleep_type(MODEM_SLEEP_T);
+    wifi_fpm_open();
+
+    // res = wifi_fpm_do_sleep(0xfffffff);
+    // 5s sleep
+    res = wifi_fpm_do_sleep(5 * 1000000);
+    if (res != 0) {
+        log_object_print(NULL, LOG_WARNING,
+                         "wifi_fpm_do_sleep() failed: %d\r\n",
+                         res);
+        return (res);
+    }
+
+    return (res);
+}
+
 #endif

@@ -143,4 +143,6 @@ enum esp_wifi_dhcp_status_t esp_wifi_station_dhcp_client_status(void);
  */
 const char *esp_wifi_station_status_as_string(enum esp_wifi_station_status_t status);
 
+int esp_wifi_force_sleep(void);
+
 #endif
