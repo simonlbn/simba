@@ -97,6 +97,40 @@ static const char *message_fmt[] = {
 /** Extract Least Significant Byte from a 16bit value. */
 #define LSB(b) (b & 0xff)
 
+static const char* get_message_fmt(int idx)
+{
+    if (idx < 0 || idx >= membersof(message_fmt)) {
+        return "invalid";
+    }
+
+    return (message_fmt[idx]);
+}
+
+#ifdef MQTT_CLIENT_FS
+static int cmd_mqtt_status_cb(int argc,
+                              const char *argv[],
+                              void *out_p,
+                              void *in_p,
+                              void *arg_p,
+                              void *call_arg_p)
+{
+    struct mqtt_client_t *self_p = arg_p;
+    struct socket_t *sock = self_p->transport.out_p;// XXX we just killed baby jesus
+
+    std_fprintf(out_p, OSTR("mqtt_client state:\r\n"));
+    std_fprintf(out_p, OSTR("  name = %s\r\n"), self_p->name_p);
+    std_fprintf(out_p, OSTR("  state = %d\r\n"), self_p->state);
+    std_fprintf(out_p, OSTR("  control = \r\n"));
+    std_fprintf(out_p, OSTR("    in = %d\r\n"), queue_size(&self_p->control.in));
+    std_fprintf(out_p, OSTR("    out = %d\r\n"), queue_size(&self_p->control.out));
+    std_fprintf(out_p, OSTR("  transport = \r\n"));
+    std_fprintf(out_p, OSTR("    input.state = %d\r\n"), sock->input.cb.state);
+    std_fprintf(out_p, OSTR("    output.state = %d\r\n"), sock->output.cb.state);
+
+    return (0);
+}
+#endif
+
 /**
  * Write a single variable length string with header to the server.
  */
@@ -823,7 +857,7 @@ static int handle_publish(struct mqtt_client_t *self_p,
 }
 
 /**
- * Read a control message.
+ * Read a control message from application code.
  */
 static int read_control_message(struct mqtt_client_t *self_p)
 {
@@ -835,6 +869,12 @@ static int read_control_message(struct mqtt_client_t *self_p)
                    sizeof(type)) != sizeof(type)) {
         return (-1);
     }
+
+    log_object_print(self_p->log_object_p,
+                     LOG_DEBUG,
+                     OSTR("Got MQTT control msg %d in state %d.\r\n"),
+                     type,
+                     self_p->state);
 
     switch (self_p->state) {
 
@@ -901,6 +941,7 @@ static int read_server_message(struct mqtt_client_t *self_p)
     size_t size;
 
     res = 0;
+    type = -1;
     flags = 0;
     size = 0;
 
@@ -911,7 +952,7 @@ static int read_server_message(struct mqtt_client_t *self_p)
     log_object_print(self_p->log_object_p,
                      LOG_DEBUG,
                      OSTR("Read MQTT message '%s' from the server.\r\n"),
-                     message_fmt[type]);
+                     get_message_fmt(type));
 
     switch (type) {
 
@@ -950,6 +991,11 @@ static int read_server_message(struct mqtt_client_t *self_p)
         break;
 
     default:
+        res = -1;
+        log_object_print(self_p->log_object_p,
+                         LOG_WARNING,
+                         OSTR("Read MQTT unsupported message '%s' from the server.\r\n"),
+                         get_message_fmt(type));
         break;
     }
 
@@ -993,9 +1039,28 @@ int mqtt_client_init(struct mqtt_client_t *self_p,
     self_p->on_publish = on_publish;
     self_p->on_error = on_error;
 
+#ifdef MQTT_CLIENT_FS
+    fs_command_init(&self_p->cmd_mqtt_status_cb,
+                    CSTR("/debug/mqtt_client_status"),
+                    cmd_mqtt_status_cb,
+                    self_p);
+    fs_command_register(&self_p->cmd_mqtt_status_cb);
+#endif
+
     return (0);
 }
 
+/**
+ * Send a control packet to the mqtt_client thread.
+ *
+ * @param[in] self_p MQTT client.
+ * @param[in] char Control packet types (MQTT_*)
+ * @param[in] buf_p Message payload / data. Format depends on packet type.
+                    May be NULL.
+ * @param[in] payload_size Number of bytes in buf_p.
+ *
+ * @return Return code from mqtt_client thread handler.
+ */
 static int control_routine(struct mqtt_client_t *self_p,
                            char type,
                            void *buf_p,
@@ -1074,6 +1139,7 @@ int mqtt_client_unsubscribe(struct mqtt_client_t *self_p,
                             &message_p,
                             sizeof(message_p)));
 }
+
 
 void *mqtt_client_main(void *arg_p)
 {

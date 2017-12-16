@@ -90,9 +90,9 @@ struct mqtt_string_t {
  * MQTT client.
  */
 struct mqtt_client_t {
-    const char *name_p;
+    const char *name_p; //* Name of the thread.*/
     struct log_object_t *log_object_p;
-    int state;
+    int state; //* mqtt_client_state_t */
     struct {
         int type;
         void *data_p;
@@ -102,11 +102,12 @@ struct mqtt_client_t {
         void *in_p;
     } transport;
     struct {
-        struct queue_t out;
-        struct queue_t in;
+        struct queue_t out; //* Packets out to the application code
+        struct queue_t in; //* Packets in to the mqtt_client thread
     } control;
     mqtt_on_publish_t on_publish;
     mqtt_on_error_t on_error;
+    struct fs_command_t cmd_mqtt_status_cb;
 };
 
 /**
