@@ -51,7 +51,7 @@ int main()
     /* Initialize the BMP280 I2C transport layer. */
     bmp280_transport_i2c_init(&transport,
                               &i2c,
-                              BMP280_I2C_ADDRESS_0);
+                              BMP280_I2C_ADDRESS_1);
 
     /* Initialize and start the BMP280 driver with the I2C
        transport layer. */
